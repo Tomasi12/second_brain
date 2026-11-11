@@ -28,3 +28,4 @@ This is a **new, independent implementation**, built differently from the one I 
 
 ## Status
 2026-11-11 — Second brain created. No code yet.
+2026-11-11 — Code repo `sca` created (public, github.com/Tomasi12/sca), next to this repo. See [[0002-separate-memory-and-code-repos]].
