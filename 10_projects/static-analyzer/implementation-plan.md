@@ -23,7 +23,7 @@ This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2
 | 5 | **Value engine + run-time checks**: CFG, ranges, solver, summaries; 11 run-time checks | `59e2137` `3fc2fe8` | 17 |
 | 6 | **Rules, metrics, help, backends**: ~40 coding rules, HIS metrics, rule registry + Explain, optional cppcheck/clang-tidy, generated catalog; CI fixes | `24682e3` … `c7227c5` | 6, 8, 9, 10, 11, 13, 14 |
 | 7 | **Memory lifetime**: memory blocks + status in the engine; 9 checks (leak, double free, use after free, bad free, dangling, unchecked alloc, alloc size, sizeof pointer, pointer arith). Design: [[0006-memory-blocks-in-the-value-engine]] | `3b755f1` | — |
-| 8 | **Functions and values**: missing-return, invalid-enum (enum types carry their values), no-return-call (same-file "never returns" summary; such calls end the path), bad-function-pointer (cast from a data object) | (uncommitted, 2026-11-16) | — |
+| 8 | **Functions and values**: missing-return, invalid-enum (enum types carry their values), no-return-call (same-file "never returns" summary; such calls end the path), bad-function-pointer (cast from a data object) | `5b41f2c` | — |
 
 Result after block 6: car-control **55 / 63**. After block 7: **64 / 72**. After block 8: **68 / 76** in covered categories, **0 false positives**.
 
