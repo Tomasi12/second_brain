@@ -10,7 +10,7 @@ related: [[overview]], [[sca-extension-current-state]], [[0005-own-engine-issue-
 
 ## Summary
 The work is split into blocks. Each block is one coherent piece that ends in a commit, tests, samples and a new
-car-control benchmark number. Blocks 1–7 are done (2026-11-11 … 2026-11-16). Block 8 is next.
+car-control benchmark number. Blocks 1–8 are done (2026-11-11 … 2026-11-16). Block 9 is next.
 This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2026-11-12]]); ADR-0005 changed its order.
 
 ## Done
@@ -23,14 +23,11 @@ This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2
 | 5 | **Value engine + run-time checks**: CFG, ranges, solver, summaries; 11 run-time checks | `59e2137` `3fc2fe8` | 17 |
 | 6 | **Rules, metrics, help, backends**: ~40 coding rules, HIS metrics, rule registry + Explain, optional cppcheck/clang-tidy, generated catalog; CI fixes | `24682e3` … `c7227c5` | 6, 8, 9, 10, 11, 13, 14 |
 | 7 | **Memory lifetime**: memory blocks + status in the engine; 9 checks (leak, double free, use after free, bad free, dangling, unchecked alloc, alloc size, sizeof pointer, pointer arith). Design: [[0006-memory-blocks-in-the-value-engine]] | `3b755f1` | — |
+| 8 | **Functions and values**: missing-return, invalid-enum (enum types carry their values), no-return-call (same-file "never returns" summary; such calls end the path), bad-function-pointer (cast from a data object) | (uncommitted, 2026-11-16) | — |
 
-Result after block 6: car-control **55 / 63**. After block 7: **64 / 72** in covered categories, **0 false positives**.
+Result after block 6: car-control **55 / 63**. After block 7: **64 / 72**. After block 8: **68 / 76** in covered categories, **0 false positives**.
 
 ## Next blocks (in this order)
-
-### 8. Quick wins — 4 issues
-`missing_return`, `invalid_enum`, `bad_func_ptr`, `non_terminating_call`.
-- These are mostly CFG and declaration checks: a non-void path with no return, an int cast to an enum outside its values, a call through a NULL or wrong function pointer, and a call to a function that never returns.
 
 ### 9. Strings and format — 6 issues
 `string_overflow` (2), `missing_null_terminator`, `overlapping_copy`, `format_string`, `uncontrolled_format`.

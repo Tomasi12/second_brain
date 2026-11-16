@@ -10,10 +10,10 @@ related: [[overview]], [[implementation-plan]], [[0003-vscode-extension-and-test
 # SCA extension — current state
 
 ## Summary
-As of `sca` commit `3b755f1` (2026-11-16, plan block 7: memory lifetime), SCA is a working analyzer.
-It has its own engine, run-time and memory checks, about 40 coding rules, HIS metrics, reports, a CLI and CI. On
-car-control it finds **64 of 72** expected issues in the 46 covered categories, with **0 false positives**.
-14 categories (15 issues) have no check yet.
+As of plan block 8 (2026-11-16, on top of `sca` commit `3b755f1`), SCA is a working analyzer.
+It has its own engine, run-time, memory and function checks, about 40 coding rules, HIS metrics, reports, a CLI and CI.
+On car-control it finds **68 of 76** expected issues in the 50 covered categories, with **0 false positives**.
+10 categories (11 issues: strings and formats, floating point, concurrency) have no check yet.
 
 ## Details
 **Editor (VS Code)**
@@ -28,6 +28,7 @@ car-control it finds **64 of 72** expected issues in the 46 covered categories, 
 - Value engine: CFG per C function, value ranges with zero witness, init state, pointer null state, a fixed-point solver with widening, narrowing on conditions. It has file summaries (static stores, same-file returns, call-site args of `static` functions) and a time budget per function and per file. Headers are read for typedefs, struct fields, enums, globals and register macros.
 - Run-time checks (`runtime-bugfinder:`): div-zero, null-deref, uninit-read, out-of-bounds (incl. memcpy/memset/memmove), overflow, uint-wrap, invalid-shift, conversion, dead-code, endless-loop, stack-escape.
 - Memory lifetime (`runtime-bugfinder:`, block 7): memory-leak, double-free, use-after-free, bad-free, dangling-pointer, unchecked-alloc, alloc-size, sizeof-pointer, pointer-arith. Design: [[0006-memory-blocks-in-the-value-engine]]. Sample `tests/samples/memory_checks.c`.
+- Functions and values (`runtime-bugfinder:`, block 8): missing-return, invalid-enum (enum CTypes carry their constant values), no-return-call (a same-file "never returns" summary; such calls end the path for all checks), bad-function-pointer (syntactic: casts from a data object; fixed integer addresses allowed). Sample `tests/samples/function_checks.c`.
 - Coding rules (`sca-own:`): about 40 rules in expressions, control flow, types and literals, and declarations, plus recursion over the call graph. A rule registry has own-words text and tested bad/good examples. Some rules are off by default (magic-number, increment-in-expression).
 - `his-metrics:` cyclomatic, nesting, statements, parameters, returns, calls, comment density. Limits come from `.sca.json`.
 - Optional backends: cppcheck and clang-tidy run as separate processes, and their findings are merged with SCA rules on the same line.
@@ -46,7 +47,7 @@ car-control it finds **64 of 72** expected issues in the 46 covered categories, 
 - `util.c:39` out_of_bounds: `i + 1 == n` at the table edge.
 - `pid.c:26` overflow: an integral with no anti-windup. `util.c:87` overflow: long digit strings overflow s32.
 
-**Not done yet:** checks for 14 categories (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
+**Not done yet:** checks for 10 categories (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
 
 ## Open questions
 - LSP server or keep logic in the extension? Still open ([[0003-vscode-extension-and-test-strategy]]).
