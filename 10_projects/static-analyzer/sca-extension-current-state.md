@@ -10,7 +10,7 @@ related: [[overview]], [[implementation-plan]], [[0003-vscode-extension-and-test
 # SCA extension — current state
 
 ## Summary
-As of `sca` merge commit `f17ec98` (2026-11-16, blocks 1–11; local, not yet pushed), SCA is a working analyzer.
+As of `sca` merge commit `f17ec98` (2026-11-16, blocks 1–11, pushed), SCA is a working analyzer.
 It has its own engine with cross-file knowledge, run-time, memory, function, string/format and floating-point checks,
 about 40 coding rules, HIS metrics, reports, a CLI and CI. On car-control it finds **85 of 85** expected issues in the
 58 covered categories, with **0 false positives**. Only concurrency (2 issues) has no check yet.
