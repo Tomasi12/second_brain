@@ -10,10 +10,10 @@ related: [[overview]], [[implementation-plan]], [[0003-vscode-extension-and-test
 # SCA extension — current state
 
 ## Summary
-As of `sca` commit `5b41f2c` (2026-11-16, plan block 8, pushed), SCA is a working analyzer.
-It has its own engine, run-time, memory and function checks, about 40 coding rules, HIS metrics, reports, a CLI and CI.
-On car-control it finds **68 of 76** expected issues in the 50 covered categories, with **0 false positives**.
-10 categories (11 issues: strings and formats, floating point, concurrency) have no check yet.
+As of `sca` commit `5b41f2c` (pushed) plus blocks 9 and 11 in the working tree (2026-11-16), SCA is a working analyzer.
+It has its own engine, run-time, memory, function, string/format and floating-point checks, about 40 coding rules,
+HIS metrics, reports, a CLI and CI. On car-control it finds **77 of 85** expected issues in the 58 covered categories,
+with **0 false positives**. Only concurrency (2 issues) has no check yet; block 10 (the 8 cross-file misses) is in progress.
 
 ## Details
 **Editor (VS Code)**
@@ -29,6 +29,8 @@ On car-control it finds **68 of 76** expected issues in the 50 covered categorie
 - Run-time checks (`runtime-bugfinder:`): div-zero, null-deref, uninit-read, out-of-bounds (incl. memcpy/memset/memmove), overflow, uint-wrap, invalid-shift, conversion, dead-code, endless-loop, stack-escape.
 - Memory lifetime (`runtime-bugfinder:`, block 7): memory-leak, double-free, use-after-free, bad-free, dangling-pointer, unchecked-alloc, alloc-size, sizeof-pointer, pointer-arith. Design: [[0006-memory-blocks-in-the-value-engine]]. Sample `tests/samples/memory_checks.c`.
 - Functions and values (`runtime-bugfinder:`, block 8): missing-return, invalid-enum (enum CTypes carry their constant values), no-return-call (a same-file "never returns" summary; such calls end the path for all checks), bad-function-pointer (syntactic: casts from a data object; fixed integer addresses allowed). Sample `tests/samples/function_checks.c`.
+- Strings and formats (block 9, `src/core/engine/strings.ts`): string-overflow, missing-terminator, overlapping-copy, format-mismatch, uncontrolled-format. Uses char-array sizes from types, string-literal lengths, printf conversion widths, byte offsets of rows of 2-D arrays.
+- Floating point (block 11): float-overflow (exp limits), float-invalid (sqrt / log / acos / asin domains), float-conversion (float → int; unbounded floats only against types below 32 bits, to stay quiet on `(int)x`). Float macro constants now have values (the `#if` evaluator only knew integers). Sample `tests/samples/string_float_checks.c`.
 - Coding rules (`sca-own:`): about 40 rules in expressions, control flow, types and literals, and declarations, plus recursion over the call graph. A rule registry has own-words text and tested bad/good examples. Some rules are off by default (magic-number, increment-in-expression).
 - `his-metrics:` cyclomatic, nesting, statements, parameters, returns, calls, comment density. Limits come from `.sca.json`.
 - Optional backends: cppcheck and clang-tidy run as separate processes, and their findings are merged with SCA rules on the same line.
@@ -47,7 +49,7 @@ On car-control it finds **68 of 76** expected issues in the 50 covered categorie
 - `util.c:39` out_of_bounds: `i + 1 == n` at the table edge.
 - `pid.c:26` overflow: an integral with no anti-windup. `util.c:87` overflow: long digit strings overflow s32.
 
-**Not done yet:** checks for 10 categories (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
+**Not done yet:** checks for 2 concurrency categories and the 8 cross-file misses (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
 
 ## Open questions
 - LSP server or keep logic in the extension? Still open ([[0003-vscode-extension-and-test-strategy]]).
