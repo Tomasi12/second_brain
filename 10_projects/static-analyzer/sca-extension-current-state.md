@@ -10,7 +10,7 @@ related: [[overview]], [[implementation-plan]], [[0003-vscode-extension-and-test
 # SCA extension — current state
 
 ## Summary
-As of `sca` commit `c7227c5` (2026-11-15) plus plan block 7 (memory lifetime, 2026-11-16), SCA is a working analyzer.
+As of `sca` commit `3b755f1` (2026-11-16, plan block 7: memory lifetime), SCA is a working analyzer.
 It has its own engine, run-time and memory checks, about 40 coding rules, HIS metrics, reports, a CLI and CI. On
 car-control it finds **64 of 72** expected issues in the 46 covered categories, with **0 false positives**.
 14 categories (15 issues) have no check yet.
