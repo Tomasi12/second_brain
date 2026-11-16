@@ -10,8 +10,8 @@ related: [[overview]], [[sca-extension-current-state]], [[0005-own-engine-issue-
 
 ## Summary
 The work is split into blocks. Each block is one coherent piece that ends in a commit, tests, samples and a new
-car-control benchmark number. Blocks 1–9 and 11 are done (2026-11-11 … 2026-11-16). Block 10 runs in a separate
-session on branch `block10-cross-file` (worktree `C:\AI_Claude\sca-block10`); block 12 is next after it.
+car-control benchmark number. Blocks 1–11 are done (2026-11-11 … 2026-11-16). Block 12 (concurrency) is next and
+needs an ADR first.
 This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2026-11-12]]); ADR-0005 changed its order.
 
 ## Done
@@ -25,18 +25,13 @@ This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2
 | 6 | **Rules, metrics, help, backends**: ~40 coding rules, HIS metrics, rule registry + Explain, optional cppcheck/clang-tidy, generated catalog; CI fixes | `24682e3` … `c7227c5` | 6, 8, 9, 10, 11, 13, 14 |
 | 7 | **Memory lifetime**: memory blocks + status in the engine; 9 checks (leak, double free, use after free, bad free, dangling, unchecked alloc, alloc size, sizeof pointer, pointer arith). Design: [[0006-memory-blocks-in-the-value-engine]] | `3b755f1` | — |
 | 8 | **Functions and values**: missing-return, invalid-enum (enum types carry their values), no-return-call (same-file "never returns" summary; such calls end the path), bad-function-pointer (cast from a data object) | `5b41f2c` | — |
-| 9 | **Strings and formats** (`src/core/engine/strings.ts`): string-overflow, missing-terminator, overlapping-copy, format-mismatch, uncontrolled-format | (uncommitted, 2026-11-16) | — |
-| 11 | **Floating point**: float-overflow (exp), float-invalid (sqrt / log / acos), float-conversion; float macro constants get values; `x * x` ≥ 0 | (uncommitted, 2026-11-16) | — |
+| 9 | **Strings and formats** (`src/core/engine/strings.ts`): string-overflow, missing-terminator, overlapping-copy, format-mismatch, uncontrolled-format | `734cd78` | — |
+| 10 | **Cross-file and inputs**: project index (other files' return values, call arguments and buffer lengths, struct initializers), volatile / pointer-to-const inputs as backed ranges, narrowing rounds after widening, accumulator overflow. Design: [[0007-cross-file-summaries-and-inputs]]. Built in a separate session on branch `block10-cross-file`, merged | `6e63c0f` (merge `f17ec98`) | — |
+| 11 | **Floating point**: float-overflow (exp), float-invalid (sqrt / log / acos), float-conversion; float macro constants get values; `x * x` ≥ 0 | `734cd78` | — |
 
-Result after block 6: car-control **55 / 63**. After block 7: **64 / 72**. After block 8: **68 / 76**. After blocks 9 + 11: **77 / 85** in covered categories, **0 false positives**. Only the 8 block-10 misses and 2 concurrency categories are left.
+Result after block 6: car-control **55 / 63**. After block 7: **64 / 72**. After block 8: **68 / 76**. After blocks 9 + 11: **77 / 85**. After block 10: **85 / 85** in covered categories, **0 false positives**; one new unmarked finding (`can.c:62`, a real defect next to the planted one). Only the 2 concurrency categories have no check. Cost: 2,000 files 12.9 s → 16.3 s cold.
 
 ## Next blocks (in this order)
-
-### 10. Cross-file and unknown inputs — the 8 misses (in progress, separate session)
-- **Project summaries**: return values and stored values from other files (NULL from an invalid NVM block, 0 from an erased calibration). Needs an index across the monitored files, cached per file.
-- **Unknown inputs as *possible***: data from the bus, struct fields behind pointers and table edges. Report as *possible* when no guard is found, without raising false positives on SAFE lines.
-- Accumulating overflow (an integral with no limit, digit parsing).
-- Biggest engine block. Measure false positives and speed carefully.
 
 ### 12. Concurrency, light — 2 issues (decision needed first)
 `data_race` (ISR vs. main loop without volatile/critical section), `missing_unlock` (lock not released on a path).

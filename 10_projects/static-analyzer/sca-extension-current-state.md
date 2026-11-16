@@ -10,10 +10,10 @@ related: [[overview]], [[implementation-plan]], [[0003-vscode-extension-and-test
 # SCA extension — current state
 
 ## Summary
-As of `sca` commit `5b41f2c` (pushed) plus blocks 9 and 11 in the working tree (2026-11-16), SCA is a working analyzer.
-It has its own engine, run-time, memory, function, string/format and floating-point checks, about 40 coding rules,
-HIS metrics, reports, a CLI and CI. On car-control it finds **77 of 85** expected issues in the 58 covered categories,
-with **0 false positives**. Only concurrency (2 issues) has no check yet; block 10 (the 8 cross-file misses) is in progress.
+As of `sca` merge commit `f17ec98` (2026-11-16, blocks 1–11; local, not yet pushed), SCA is a working analyzer.
+It has its own engine with cross-file knowledge, run-time, memory, function, string/format and floating-point checks,
+about 40 coding rules, HIS metrics, reports, a CLI and CI. On car-control it finds **85 of 85** expected issues in the
+58 covered categories, with **0 false positives**. Only concurrency (2 issues) has no check yet.
 
 ## Details
 **Editor (VS Code)**
@@ -31,6 +31,7 @@ with **0 false positives**. Only concurrency (2 issues) has no check yet; block 
 - Functions and values (`runtime-bugfinder:`, block 8): missing-return, invalid-enum (enum CTypes carry their constant values), no-return-call (a same-file "never returns" summary; such calls end the path for all checks), bad-function-pointer (syntactic: casts from a data object; fixed integer addresses allowed). Sample `tests/samples/function_checks.c`.
 - Strings and formats (block 9, `src/core/engine/strings.ts`): string-overflow, missing-terminator, overlapping-copy, format-mismatch, uncontrolled-format. Uses char-array sizes from types, string-literal lengths, printf conversion widths, byte offsets of rows of 2-D arrays.
 - Floating point (block 11): float-overflow (exp limits), float-invalid (sqrt / log / acos / asin domains), float-conversion (float → int; unbounded floats only against types below 32 bits, to stay quiet on `(int)x`). Float macro constants now have values (the `#if` evaluator only knew integers). Sample `tests/samples/string_float_checks.c`.
+- Cross-file knowledge and inputs (block 10, [[0007-cross-file-summaries-and-inputs]]): a project index (`src/core/project/projectIndex.ts`) gives return values of other files' functions, argument values and buffer lengths of all calls, and struct initializer zeros; cached per file content, refreshed on save/create/delete. Volatile objects and fields behind pointer-to-const parameters are inputs with their type's full range. Narrowing rounds after widening. Accumulator overflow check (`src/core/checks/accumulate.ts`). Sample project `tests/samples/cross_file/`.
 - Coding rules (`sca-own:`): about 40 rules in expressions, control flow, types and literals, and declarations, plus recursion over the call graph. A rule registry has own-words text and tested bad/good examples. Some rules are off by default (magic-number, increment-in-expression).
 - `his-metrics:` cyclomatic, nesting, statements, parameters, returns, calls, comment density. Limits come from `.sca.json`.
 - Optional backends: cppcheck and clang-tidy run as separate processes, and their findings are merged with SCA rules on the same line.
@@ -40,16 +41,11 @@ with **0 false positives**. Only concurrency (2 issues) has no check yet; block 
 - `npm run benchmark -- <project>` checks against `expected_findings.csv` (found / missed / false positives / unmarked).
 - `npm run analyze` writes text, CSV, SARIF 2.1.0 or HTML, with `--fail-on` and `--baseline`. `npm run perf` is the speed test.
 - GitHub Actions run unit and integration tests on Linux and Windows, the car-control benchmark with `--fail-on-fp`, and the speed test. They publish the SARIF report and the `.vsix` as artifacts.
-- Speed: 2,000 car-control files take about 12.7 s cold (CI limit 30 s); 5,000 sample files 32.7 s cold, 2.2 s cached.
+- Speed: 2,000 car-control files take about 16.3 s cold (CI limit 30 s; was 12.7 s before the project index and narrowing), 0.8 s cached.
 
-**The 8 misses in covered categories** (car-control):
-- `wheel_speed.c:28` div_zero: the value is 0 in an erased NVM calibration (from another module).
-- `wheel_speed.c:12` null_deref: the pointer is NULL when the NVM block is invalid (set in `main.c`).
-- `can.c:28 / :63 / :75` out_of_bounds: a DLC from the bus up to 15, offset 7 writes `data[8]`, and an unchecked ID range.
-- `util.c:39` out_of_bounds: `i + 1 == n` at the table edge.
-- `pid.c:26` overflow: an integral with no anti-windup. `util.c:87` overflow: long digit strings overflow s32.
+**Misses:** none in the covered categories. The 8 former cross-file / input misses (wheel_speed.c:12/28, can.c:28/63/75, util.c:39/87, pid.c:26) are found since block 10.
 
-**Not done yet:** checks for 2 concurrency categories and the 8 cross-file misses (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
+**Not done yet:** checks for the 2 concurrency categories (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
 
 ## Open questions
 - LSP server or keep logic in the extension? Still open ([[0003-vscode-extension-and-test-strategy]]).
