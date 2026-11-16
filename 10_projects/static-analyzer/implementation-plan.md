@@ -10,7 +10,7 @@ related: [[overview]], [[sca-extension-current-state]], [[0005-own-engine-issue-
 
 ## Summary
 The work is split into blocks. Each block is one coherent piece that ends in a commit, tests, samples and a new
-car-control benchmark number. Blocks 1–6 are done (2026-11-11 … 2026-11-15). Block 7 is next.
+car-control benchmark number. Blocks 1–7 are done (2026-11-11 … 2026-11-16). Block 8 is next.
 This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2026-11-12]]); ADR-0005 changed its order.
 
 ## Done
@@ -22,16 +22,11 @@ This replaces the 20-step plan from 2026-11-12 ([[implementation-plan-20-steps-2
 | 4 | **Project setup + review**: compile DB, preprocessor, `.sca.json`, justify/deviations, baseline, SARIF/HTML/CSV, CLI, CI | `13f672e` | 4, 5, 7, 12, 15, 16, 19 |
 | 5 | **Value engine + run-time checks**: CFG, ranges, solver, summaries; 11 run-time checks | `59e2137` `3fc2fe8` | 17 |
 | 6 | **Rules, metrics, help, backends**: ~40 coding rules, HIS metrics, rule registry + Explain, optional cppcheck/clang-tidy, generated catalog; CI fixes | `24682e3` … `c7227c5` | 6, 8, 9, 10, 11, 13, 14 |
+| 7 | **Memory lifetime**: memory blocks + status in the engine; 9 checks (leak, double free, use after free, bad free, dangling, unchecked alloc, alloc size, sizeof pointer, pointer arith). Design: [[0006-memory-blocks-in-the-value-engine]] | (uncommitted, 2026-11-16) | — |
 
-Result after block 6: car-control **55 / 63** in covered categories, **0 false positives**.
+Result after block 6: car-control **55 / 63**. After block 7: **64 / 72** in covered categories, **0 false positives**.
 
 ## Next blocks (in this order)
-### 7. Memory lifetime — 9 issues
-`memory_leak`, `double_free`, `use_after_free`, `bad_free`, `dangling_ptr`, `unchecked_alloc`, `alloc_size`,
-`wrong_sizeof`, `ptr_arith`.
-- Engine: extend the pointer state (null / not null) with **allocated / freed / escaped** and the size of the allocation.
-- Checks: free twice, use after free, free of a non-heap pointer, a leak on a path to return, malloc result used unchecked, a size that does not match `sizeof(*p)`, and pointer arithmetic past the object.
-- Why first: the largest group, and it builds on what the engine already has.
 
 ### 8. Quick wins — 4 issues
 `missing_return`, `invalid_enum`, `bad_func_ptr`, `non_terminating_call`.

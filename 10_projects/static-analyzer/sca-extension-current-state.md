@@ -10,9 +10,10 @@ related: [[overview]], [[implementation-plan]], [[0003-vscode-extension-and-test
 # SCA extension — current state
 
 ## Summary
-As of `sca` commit `c7227c5` (2026-11-15, working tree clean), SCA is a working analyzer. It has its own engine,
-run-time checks, about 40 coding rules, HIS metrics, reports, a CLI and CI. On car-control it finds **55 of 63** expected
-issues in the 37 covered categories, with **0 false positives**. 23 categories (24 issues) have no check yet.
+As of `sca` commit `c7227c5` (2026-11-15) plus plan block 7 (memory lifetime, 2026-11-16), SCA is a working analyzer.
+It has its own engine, run-time and memory checks, about 40 coding rules, HIS metrics, reports, a CLI and CI. On
+car-control it finds **64 of 72** expected issues in the 46 covered categories, with **0 false positives**.
+14 categories (15 issues) have no check yet.
 
 ## Details
 **Editor (VS Code)**
@@ -26,6 +27,7 @@ issues in the 37 covered categories, with **0 false positives**. 23 categories (
 - Project: `compile_commands.json` (GCC/Clang/MSVC flags), a small preprocessor (`#if` evaluation, macros, includes, guards), `.sca.json` with a JSON schema, `sca-justify(...)` comments and deviations, a baseline file.
 - Value engine: CFG per C function, value ranges with zero witness, init state, pointer null state, a fixed-point solver with widening, narrowing on conditions. It has file summaries (static stores, same-file returns, call-site args of `static` functions) and a time budget per function and per file. Headers are read for typedefs, struct fields, enums, globals and register macros.
 - Run-time checks (`runtime-bugfinder:`): div-zero, null-deref, uninit-read, out-of-bounds (incl. memcpy/memset/memmove), overflow, uint-wrap, invalid-shift, conversion, dead-code, endless-loop, stack-escape.
+- Memory lifetime (`runtime-bugfinder:`, block 7): memory-leak, double-free, use-after-free, bad-free, dangling-pointer, unchecked-alloc, alloc-size, sizeof-pointer, pointer-arith. Design: [[0006-memory-blocks-in-the-value-engine]]. Sample `tests/samples/memory_checks.c`.
 - Coding rules (`sca-own:`): about 40 rules in expressions, control flow, types and literals, and declarations, plus recursion over the call graph. A rule registry has own-words text and tested bad/good examples. Some rules are off by default (magic-number, increment-in-expression).
 - `his-metrics:` cyclomatic, nesting, statements, parameters, returns, calls, comment density. Limits come from `.sca.json`.
 - Optional backends: cppcheck and clang-tidy run as separate processes, and their findings are merged with SCA rules on the same line.
@@ -35,7 +37,7 @@ issues in the 37 covered categories, with **0 false positives**. 23 categories (
 - `npm run benchmark -- <project>` checks against `expected_findings.csv` (found / missed / false positives / unmarked).
 - `npm run analyze` writes text, CSV, SARIF 2.1.0 or HTML, with `--fail-on` and `--baseline`. `npm run perf` is the speed test.
 - GitHub Actions run unit and integration tests on Linux and Windows, the car-control benchmark with `--fail-on-fp`, and the speed test. They publish the SARIF report and the `.vsix` as artifacts.
-- Speed: 2,000 files take about 11.5 s cold.
+- Speed: 2,000 car-control files take about 12.7 s cold (CI limit 30 s); 5,000 sample files 32.7 s cold, 2.2 s cached.
 
 **The 8 misses in covered categories** (car-control):
 - `wheel_speed.c:28` div_zero: the value is 0 in an erased NVM calibration (from another module).
@@ -44,7 +46,7 @@ issues in the 37 covered categories, with **0 false positives**. 23 categories (
 - `util.c:39` out_of_bounds: `i + 1 == n` at the table edge.
 - `pid.c:26` overflow: an integral with no anti-windup. `util.c:87` overflow: long digit strings overflow s32.
 
-**Not done yet:** checks for 23 categories (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
+**Not done yet:** checks for 14 categories (see [[implementation-plan]]), cross-file analysis, bundler (esbuild), LICENSE (packaging uses `--skip-license`), Marketplace publishing, LSP decision, C++ standards.
 
 ## Open questions
 - LSP server or keep logic in the extension? Still open ([[0003-vscode-extension-and-test-strategy]]).
