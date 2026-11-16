@@ -11,7 +11,7 @@ Inspired by the PARA method (Tiago Forte) and open-source starters like
 ```
 C:\AI_Claude\              workspace (open Claude Code here)
   CLAUDE.md                workspace rules: brain = memory, sca = work
-  .claude\commands\        /capture, /decide, /review
+  .claude\commands\        /capture, /decide, /review, /ingest
   second_brain\            ← this repo (memory)
   sca\                     code repo (work)
 ```

@@ -3,7 +3,7 @@ title: Run-time error classes (C/C++)
 date: 2026-11-11
 tags: [area, runtime-errors, c, cpp]
 status: active
-related: [[static-analysis-basics]]
+related: [[static-analysis-basics]], [[embedded-c-defect-categories]]
 ---
 
 # Run-time error classes (C/C++)
